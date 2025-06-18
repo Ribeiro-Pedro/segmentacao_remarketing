@@ -29,18 +29,18 @@ date_range = st.sidebar.date_input(
 
 # ✅ Filtro por canal (traffic_source)
 traffic_sources = df['traffic_source'].dropna().unique().tolist()
-selected_channels = st.sidebar.multiselect(
+selected_channels = st.sidebar.pills(
     "Selecione o(s) canal(is) de aquisição",
-    options=traffic_sources,
-    default=traffic_sources  # seleciona todos por padrão
+    selection_mode="multi",
+    options=traffic_sources
 )
 
 # ✅ Filtro por tipo de evento
 event_types = df['event_name'].dropna().unique().tolist()
-selected_events = st.sidebar.multiselect(
+selected_events = st.sidebar.pills(
     "Selecione o(s) tipo(s) de evento",
-    options=event_types,
-    default=event_types  # seleciona todos por padrão
+    selection_mode="multi",
+    options=event_types
 )
 
 # ✅ Aplicar filtros
@@ -65,9 +65,9 @@ visitantes = df['user_pseudo_id'].nunique()
 taxa_conversao = (compradores / visitantes) * 100 if visitantes > 0 else 0
 
 # Compras por mês
-df['month'] = df['event_date'].dt.to_period('M')
+df['month'] = df['event_date'].dt.strftime('%Y-%m')
 compras = df[df['event_name'] == 'purchase']
-compras_por_mes = compras.groupby(['user_pseudo_id', 'month']).size().reset_index(name='compras')
+compras_por_mes = compras.groupby(['month']).size().reset_index(name='compras')
 
 # Tamanho médio do carrinho
 tamanho_carrinho = compras['purchase_revenue_in_usd'].mean() if not compras.empty else 0
@@ -101,11 +101,8 @@ with col3:
 
 st.subheader("Compras por Mês")
 if not compras_por_mes.empty:
-    compras_por_mes_plot = compras_por_mes.groupby('month')['compras'].sum().reset_index()
-    compras_por_mes_plot['month'] = compras_por_mes_plot['month'].astype(str)
-
-    fig = px.bar(compras_por_mes_plot, x='month', y='compras', title='Compras por Mês')
-    fig.update_layout(xaxis_tickangle=-90)
+    fig = px.bar(compras_por_mes, x='month', y='compras', title='Compras por Mês')
+    fig.update_layout(xaxis_tickangle=0, xaxis_type='category', xaxis_title='Mês', yaxis_title='Compras')
     st.plotly_chart(fig)
 else:
     st.write("Sem compras no período selecionado.")

@@ -51,6 +51,9 @@ def preprocess_data(df):
     # Criar identificadores de sessão: combinando user_pseudo_id + event_date + sequence_id
     df['session_id'] = df['user_pseudo_id'].astype(str) + '_' + df['event_date'].astype(str) + '_' + df['event_bundle_sequence_id'].astype(str)
     
+    # Substitue "(data deleted)" por "social media" nos registros
+    df['traffic_source'] = df['traffic_source'].replace("(data deleted)","social media")
+
     # Ordenar eventos para reconstrução de funis
     df = df.sort_values(['user_pseudo_id', 'event_timestamp'])
     
